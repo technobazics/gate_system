@@ -3,221 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gate Control App</title>
+    <title>Login System with Password Change</title>
     <style>
-        :root {
-            --primary-color: #3B82F6;
-            --secondary-color: #10B981;
-            --background-light: #F3F4F6;
-            --text-dark: #1F2937;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
         body {
-            min-height: 100vh;
-            background-color: var(--background-light);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Login Page Styles */
-        #loginPage {
+            font-family: Arial, sans-serif;
+            background-image:url(portal-classic-sliding-steel-aluminum-grey-metal-gate-slide-door-home-garden-house_100800-23486.jpg); /* Public domain image of a gate */
+            background-size: cover;
+            background-position: center;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            margin: 0;
         }
-
-        .login-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            animation: fadeIn 0.5s ease;
+        .container {
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
-
-        .login-container h2 {
-            color: var(--text-dark);
+        h2 {
             text-align: center;
             margin-bottom: 20px;
         }
-
-        .login-input {
-            width: 100%;
-            padding: 12px;
+        .input-group {
             margin-bottom: 15px;
-            border: 1px solid #D1D5DB;
-            border-radius: 8px;
-            transition: border-color 0.3s ease;
         }
-
-        .login-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .login-btn {
+        .input-group input {
             width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #333933;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
-
-        .login-btn:hover {
-            background-color: #2563EB;
+        .btn:hover {
+            background-color: #646564;
         }
-
-        /* Gate Control Page Styles */
-        #gatePage {
+        .change-password-section {
             display: none;
-            flex-direction: column;
-            height: 100vh;
+            margin-top: 20px;
         }
-
-        .header {
-            background-color: var(--text-dark);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-        }
-
-        .gate-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            place-items: center;
-            flex-grow: 1;
-            background-color: var(--background-light);
-        }
-
-        .gate-btn {
-            width: 100%;
-            max-width: 300px;
-            padding: 20px;
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .gate-btn:hover {
-            transform: scale(1.05);
-            opacity: 0.9;
-        }
-
-        #leftGateBtn, #rightGateBtn {
-            background-color: var(--secondary-color);
-        }
-
-        #bothGatesBtn {
-            background-color: var(--primary-color);
-        }
-
-        .logout-btn {
-            background-color: #EF4444;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            color: white;
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #5a655b;
             cursor: pointer;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 600px) {
-            .login-container {
-                width: 90%;
-                padding: 20px;
-            }
-
-            .gate-controls {
-                grid-template-columns: 1fr;
-            }
+        .link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <!-- Login Page -->
-    <div id="loginPage" class="absolute inset-0 flex items-center justify-center">
-        <div class="login-container">
-            <h2>Gate Control System</h2>
-            <form id="loginForm">
-                <input type="text" id="username" class="login-input" placeholder="Username" required>
-                <input type="password" id="password" class="login-input" placeholder="Password" required>
-                <button type="submit" class="login-btn">Login</button>
-            </form>
-        </div>
-    </div>
 
-    <!-- Gate Control Page -->
-    <div id="gatePage">
-        <div class="header">
-            <h1>Gate Control System</h1>
-            <button id="logoutBtn" class="logout-btn">Logout</button>
-        </div>
-        <div class="gate-controls">
-            <button id="leftGateBtn" class="gate-btn">Left Gate</button>
-            <button id="bothGatesBtn" class="gate-btn">Both Gates</button>
-            <button id="rightGateBtn" class="gate-btn">Right Gate</button>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm" onsubmit="return validateLogin()">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        <a class="link" onclick="toggleChangePassword()">Change Password</a>
+        
+        <div id="changePasswordSection" class="change-password-section">
+            <h2>Change Password</h2>
+            <div class="input-group">
+                <input type="password" id="newPassword" placeholder="New Password" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+            <button onclick="changePassword()" class="btn">Submit</button>
         </div>
     </div>
 
     <script>
-        // Previous JavaScript remains the same as in the previous example
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Initialize default credentials
+        const defaultCredentials = {
+            username: 'admin',
+            password: 'password'
+        };
+
+        // Save default credentials in localStorage if not already saved
+        if (!localStorage.getItem('credentials')) {
+            localStorage.setItem('credentials', JSON.stringify(defaultCredentials));
+        }
+
+        // Validate Login
+        function validateLogin() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
-            if (username === 'admin' && password === 'password') {
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('gatePage').style.display = 'flex';
+            const credentials = JSON.parse(localStorage.getItem('credentials'));
+
+            if (username === credentials.username && password === credentials.password) {
+                alert('Login successful!');
+                window.location.href = 'gate11.html';
+                return false; // Allow form submission or redirection
             } else {
-                alert('Invalid credentials');
+                alert('Invalid username or password');
+                return false; // Prevent form submission
             }
-        });
+        }
 
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            document.getElementById('gatePage').style.display = 'none';
-            document.getElementById('loginPage').style.display = 'flex';
-            
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        });
+        // Toggle Change Password Section
+        function toggleChangePassword() {
+            const section = document.getElementById('changePasswordSection');
+            section.style.display = section.style.display === 'block' ? 'none' : 'block';
+        }
 
-        // Gate control button listeners remain the same
-        document.getElementById('leftGateBtn').addEventListener('click', function() {
-            alert('Left Gate Opening');
-        });
+        // Change Password
+        function changePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
 
-        document.getElementById('rightGateBtn').addEventListener('click', function() {
-            alert('Right Gate Opening');
-        });
+            if (newPassword === confirmPassword) {
+                const credentials = JSON.parse(localStorage.getItem('credentials'));
+                credentials.password = newPassword;
+                localStorage.setItem('credentials', JSON.stringify(credentials));
 
-        document.getElementById('bothGatesBtn').addEventListener('click', function() {
-            alert('Both Gates Opening');
-        });
+                alert('Password changed successfully!');
+                document.getElementById('changePasswordSection').style.display = 'none';
+            } else {
+                alert('Passwords do not match. Please try again.');
+            }
+        }
     </script>
+
 </body>
 </html>
