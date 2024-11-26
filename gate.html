@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate Controls</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image:url(portal-classic-sliding-steel-aluminum-grey-metal-gate-slide-door-home-garden-house_100800-23486.jpg); 
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .controls-container {
+            text-align: center;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .gate-btn {
+            position: relative;
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #333933;
+            
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 200px;
+            height: 50px;
+            overflow: hidden;
+            text-align: center;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .gate-btn[disabled] {
+            background-color: #d3d3d3;
+            cursor: not-allowed;
+        }
+        .gate-btn .progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%; /* This will be dynamically adjusted */
+            height: 100%;
+            background-color: #4b533f; /* Light green to indicate progress */
+            z-index: 0;
+        }
+        .gate-btn .text {
+            position: relative;
+            z-index: 1;
+            white-space: nowrap;
+        }
+        .time-display {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls-container">
+        <!-- First Row: Open Buttons -->
+        <div class="row">
+            <div class="button-group">
+                <button id="left-gate" class="gate-btn">
+                    <span class="text">Left Gate</span>
+                    <div class="progress"></div>
+                </button>
+                <div id="left-gate-time" class="time-display"> Time: 0.0s</div>
+            </div>
+            <div class="button-group">
+                <button id="both-gates" class="gate-btn">
+                    <span class="text">Both Gates</span>
+                    <div class="progress"></div>
+                </button>
+                <div id="both-gates-time" class="time-display"> Time: 0.0s</div>
+            </div>
+            <div class="button-group">
+                <button id="right-gate" class="gate-btn">
+                    <span class="text">Right Gate</span>
+                    <div class="progress"></div>
+                </button>
+                <div id="right-gate-time" class="time-display"> Time: 0.0s</div>
+            </div>
+        </div>
+
+        <!-- Second Row: Close Buttons -->
+        <div class="row">
+            <div class="button-group">
+                <button id="close-left-gate" class="gate-btn">
+                    <span class="text">Close Left Gate</span>
+                </button>
+            </div>
+            <div class="button-group">
+                <button id="close-both-gates" class="gate-btn">
+                    <span class="text">Close Both Gates</span>
+                </button>
+            </div>
+            <div class="button-group">
+                <button id="close-right-gate" class="gate-btn">
+                    <span class="text">Close Right Gate</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gateProgress = {
+            'left-gate': 0,
+            'both-gates': 0,
+            'right-gate': 0,
+        };
+
+        const gateTimers = {};
+        const gateStartTimes = {};
+        const gatePressDurations = {
+            'left-gate': 0,
+            'both-gates': 0,
+            'right-gate': 0,
+        };
+
+        const INCREMENT = 0.8333; // Increment per tick for 6 seconds
+
+        function updateButtonText(buttonId, progress) {
+            const button = document.getElementById(buttonId);
+            const progressElement = button.querySelector('.progress');
+            const textElement = button.querySelector('.text');
+            const timeDisplay = document.getElementById(`${buttonId}-time`);
+
+            const currentPressDuration = gateStartTimes[buttonId]
+                ? (Date.now() - gateStartTimes[buttonId]) / 1000
+                : 0;
+            const totalTime = (gatePressDurations[buttonId] + currentPressDuration).toFixed(1);
+
+            progressElement.style.width = `${progress}%`;
+
+            if (progress >= 100) {
+                textElement.textContent = `${buttonId.replace(/-/g, ' ')} Opened`;
+                timeDisplay.textContent = `Time: ${totalTime}s`;
+
+                button.disabled = true;
+                clearInterval(gateTimers[buttonId]);
+                alert(`${buttonId.replace(/-/g, ' ')} opened completly.`);
+            } else {
+                textElement.textContent = `${buttonId.replace(/-/g, ' ')}: ${Math.round(progress)}%`;
+                timeDisplay.textContent = `Time: ${totalTime}s`;
+            }
+        }
+
+        function startPress(buttonId) {
+            if (!gateStartTimes[buttonId]) {
+                gateStartTimes[buttonId] = Date.now();
+            }
+
+            gateTimers[buttonId] = setInterval(() => {
+                if (gateProgress[buttonId] < 100) {
+                    gateProgress[buttonId] += INCREMENT;
+                    updateButtonText(buttonId, gateProgress[buttonId]);
+                } else {
+                    clearInterval(gateTimers[buttonId]);
+                }
+            }, 50);
+        }
+
+        function stopPress(buttonId) {
+            if (gateStartTimes[buttonId]) {
+                const Time = (Date.now() - gateStartTimes[buttonId]) / 1000;
+                gatePressDurations[buttonId] += parseFloat(Time);
+
+                gateStartTimes[buttonId] = null;
+                updateButtonText(buttonId, gateProgress[buttonId]);
+            }
+
+            clearInterval(gateTimers[buttonId]);
+        }
+
+        ['left-gate', 'both-gates', 'right-gate'].forEach((id) => {
+            const button = document.getElementById(id);
+            button.addEventListener('mousedown', () => {
+                if (!button.disabled) startPress(id);
+            });
+            button.addEventListener('mouseup', () => {
+                if (!button.disabled) stopPress(id);
+            });
+            button.addEventListener('mouseleave', () => {
+                if (!button.disabled) stopPress(id);
+            });
+        });
+
+        ['close-left-gate', 'close-both-gates', 'close-right-gate'].forEach((id) => {
+            const button = document.getElementById(id);
+            button.addEventListener('click', () => {
+                alert(`${id.replace(/-/g, ' ')} action triggered.`);
+            });
+        });
+    </script>
+
+</body>
+</html>
