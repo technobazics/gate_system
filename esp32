@@ -1,0 +1,121 @@
+#include <WiFi.h>
+
+// Default Access Point credentials
+const char* ssid = "ESP32_AP";
+const char* password = "12345678";
+
+// Pins where the LEDs are connected
+const int leftLedPin = 5;   // GPIO 5 for Left LED
+const int rightLedPin = 18; // GPIO 18 for Right LED
+
+// Create a WiFi server on port 80
+WiFiServer server(80);
+
+IPAddress localIP(192, 168, 4, 1); // Fixed IP Address
+IPAddress gateway(192, 168, 4, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+void setup() {
+  // Start Serial Monitor
+  Serial.begin(115200);
+
+  // Configure the LED pins as output
+  pinMode(leftLedPin, OUTPUT);
+  pinMode(rightLedPin, OUTPUT);
+  digitalWrite(leftLedPin, LOW);  // Ensure Left LED is off initially
+  digitalWrite(rightLedPin, LOW); // Ensure Right LED is off initially
+
+  // Configure the WiFi Access Point with a fixed IP
+  WiFi.softAPConfig(localIP, gateway, subnet);
+  WiFi.softAP(ssid, password);
+
+  // Start the server
+  server.begin();
+
+  // Display the Access Point IP Address
+  Serial.print("Access Point IP address: ");
+  Serial.println(localIP);
+}
+
+void loop() {
+  // Check for incoming client connections
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("New Client Connected.");
+    String request = "";
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        request += c;
+
+        // Process request when the HTTP header ends
+        if (request.indexOf("\r\n\r\n") >= 0) {
+          // Send HTTP response
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println();
+
+          // HTML content with real-time LED controls
+          client.println("<!DOCTYPE html>");
+          client.println("<html>");
+          client.println("<head><title>ESP32 LED Control</title>");
+          client.println("<script>");
+          client.println("function controlLED(action) {");
+          client.println("  var xhr = new XMLHttpRequest();");
+          client.println("  xhr.open('GET', action, true);");
+          client.println("  xhr.send();");
+          client.println("}");
+          client.println("</script>");
+          client.println("</head>");
+          client.println("<body>");
+          client.println("<h1>ESP32 LED Control</h1>");
+          client.println("<p>Press and hold the buttons to control the LEDs:</p>");
+          
+          // Left LED control buttons
+          client.println("<h2>Left LED</h2>");
+          client.println("<button onmousedown=\"controlLED('/leftON')\" onmouseup=\"controlLED('/leftOFF')\">Left LED</button>");
+          
+          // Right LED control buttons
+          client.println("<h2>Right LED</h2>");
+          client.println("<button onmousedown=\"controlLED('/rightON')\" onmouseup=\"controlLED('/rightOFF')\">Right LED</button>");
+          
+          // Both LEDs control buttons
+          client.println("<h2>Both LEDs</h2>");
+          client.println("<button onmousedown=\"controlLED('/bothON')\" onmouseup=\"controlLED('/bothOFF')\">Both LEDs</button>");
+          
+          client.println("</body>");
+          client.println("</html>");
+          client.println();
+          break;
+        }
+      }
+    }
+
+    // Parse the GET request to control LEDs
+    if (request.indexOf("GET /leftON") >= 0) {
+      digitalWrite(leftLedPin, HIGH);
+      Serial.println("Left LED ON");
+    } else if (request.indexOf("GET /leftOFF") >= 0) {
+      digitalWrite(leftLedPin, LOW);
+      Serial.println("Left LED OFF");
+    } else if (request.indexOf("GET /rightON") >= 0) {
+      digitalWrite(rightLedPin, HIGH);
+      Serial.println("Right LED ON");
+    } else if (request.indexOf("GET /rightOFF") >= 0) {
+      digitalWrite(rightLedPin, LOW);
+      Serial.println("Right LED OFF");
+    } else if (request.indexOf("GET /bothON") >= 0) {
+      digitalWrite(leftLedPin, HIGH);
+      digitalWrite(rightLedPin, HIGH);
+      Serial.println("Both LEDs ON");
+    } else if (request.indexOf("GET /bothOFF") >= 0) {
+      digitalWrite(leftLedPin, LOW);
+      digitalWrite(rightLedPin, LOW);
+      Serial.println("Both LEDs OFF");
+    }
+
+    // Close the connection with the client
+    client.stop();
+    Serial.println("Client Disconnected.");
+  }
+}
